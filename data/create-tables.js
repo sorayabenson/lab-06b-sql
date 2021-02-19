@@ -17,10 +17,15 @@ async function run() {
                     email VARCHAR(256) NOT NULL,
                     hash VARCHAR(512) NOT NULL
                 );           
-                CREATE TABLE animals (
+                CREATE TABLE ghosts (
                     id SERIAL PRIMARY KEY NOT NULL,
                     name VARCHAR(512) NOT NULL,
-                    cool_factor INTEGER NOT NULL,
+                    img VARCHAR(512) NOT NULL,
+                    description VARCHAR(512) NOT NULL,
+                    category VARCHAR(512) NOT NULL,
+                    price INTEGER NOT NULL,
+                    price_currency VARCHAR(512) NOT NULL,
+                    trustworthy BOOLEAN NOT NULL,
                     owner_id INTEGER NOT NULL REFERENCES users(id)
             );
         `);
