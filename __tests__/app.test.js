@@ -1,6 +1,8 @@
 require('dotenv').config();
 
+const { AssertionError } = require('assert');
 const { execSync } = require('child_process');
+const { assert } = require('console');
 
 const fakeRequest = require('supertest');
 const app = require('../lib/app');
@@ -261,6 +263,26 @@ describe('app routes', () => {
 
       expect(nullGhost.body).toEqual('');
 
+    });
+
+    test('returns an error when called with missing keys', async() => {
+      const newGhost = {
+        name: 'test ghost',
+        description: 'test',
+        category: 'test',
+        price: 4,
+        price_currency: 'test',
+      };
+
+      const expected = '"error": "null value in column "img" of relation "ghosts" violates not-null constraint'; 
+
+      const data = await fakeRequest(app)
+        .post('/ghosts')
+        .send(newGhost)
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(data.body).toEqual(expected);
     });
   });
 });
