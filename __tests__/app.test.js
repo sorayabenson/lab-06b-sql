@@ -1,6 +1,8 @@
 require('dotenv').config();
 
+const { AssertionError } = require('assert');
 const { execSync } = require('child_process');
+const { assert } = require('console');
 
 const fakeRequest = require('supertest');
 const app = require('../lib/app');
@@ -164,5 +166,165 @@ describe('app routes', () => {
 
       expect(data.body).toEqual(expectation);
     });
+
+    test('creates a new ghost and adds it to the list', async() => {
+
+      const newGhost = {
+        name: 'test ghost',
+        img: 'http://placekitten.com/600/600',
+        description: 'test',
+        category: 'test',
+        price: 4,
+        price_currency: 'test',
+        trustworthy: false,
+      };
+
+      const expectedGhost = {
+        ...newGhost,
+        id: 10,
+        owner_id: 1,
+      };
+
+      const data = await fakeRequest(app)
+        .post('/ghosts')
+        .send(newGhost)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual(expectedGhost);
+
+      const allGhosts = await fakeRequest(app)
+        .get('/ghosts')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      const testGhost = allGhosts.body.find(ghost => ghost.name === 'test ghost');
+
+      expect(testGhost).toEqual(expectedGhost);
+    });
+
+    test('updates ghost information by ghost id', async() => {
+
+      const newGhost = {
+        name: 'test updated ghost',
+        img: 'http://placekitten.com/600/600',
+        description: 'test',
+        category: 'test',
+        price: 8,
+        price_currency: 'test',
+        trustworthy: true,
+      };
+
+      const expectedGhost = {
+        ...newGhost,
+        id: 10,
+        owner_id: 1,
+      };
+
+      await fakeRequest(app)
+        .put('/ghosts/10')
+        .send(newGhost)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      const updatedGhost = await fakeRequest(app)
+        .get('/ghosts/10')        
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(updatedGhost.body).toEqual(expectedGhost);
+    });
+
+    test('deletes ghost information by ghost id', async() => {
+
+      const expectedGhost = {
+        id: 7,
+        name: 'Bad Photo Ghost',
+        img: 'https://static1.squarespace.com/static/546be815e4b05d93ff91f0ed/602eefdc0afad00aceb2a0ce/602eeff5513f620bd182f737/1613688824112/bad-photo-ghost.png?format=750w',
+        description: 'Bad Photo Ghost knows all your best angles, and they artistically blur you in every photo you look bad in.',
+        category: 'care',
+        price: 15,
+        price_currency: 'rolls of film',
+        trustworthy: true,
+        owner_id: 1,
+      };
+
+      const data = await fakeRequest(app)
+        .delete('/ghosts/7')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual(expectedGhost);
+
+      const nullGhost = await fakeRequest(app)
+        .get('/ghosts/7')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(nullGhost.body).toEqual('');
+
+    });
+
+    test('returns an error when .post called with missing keys', async() => {
+      const newGhost = {
+        name: 'test ghost',
+        description: 'test',
+        category: 'test',
+        price: 4,
+        price_currency: 'test',
+      };
+
+      const expected = {
+        error: 'null value in column "img" of relation "ghosts" violates not-null constraint',
+      }; 
+
+      const data = await fakeRequest(app)
+        .post('/ghosts')
+        .send(newGhost)
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(data.body).toEqual(expected);
+    });
+
+    // both of the following tests pass when .expect is (200) which seems werid that they should fail since the id does not exist in the current database.
+
+    // test('returns `` when .put is called with invalid ghost id', async() => {
+
+    //   const expectedGhost = {
+    //     name: 'test updated ghost',
+    //     img: 'http://placekitten.com/600/600',
+    //     description: 'test',
+    //     category: 'test',
+    //     price: 8,
+    //     price_currency: 'test',
+    //     trustworthy: true,
+    //     id: 666,
+    //     owner_id: 1,
+    //   };
+
+    //   const expected = '';
+
+    //   const data = await fakeRequest(app)
+    //     .put('/ghosts/666')
+    //     .send(expectedGhost)
+    //     .expect('Content-Type', /json/)
+    //     .expect(500);
+
+    //   expect(data.body).toEqual(expected);
+    // });
+
+    // test('returns `` when .delete is called with invalid ghost id', async() => {
+
+    //   const expected = '';
+
+    //   const data = await fakeRequest(app)
+    //     .delete('/ghosts/666')
+    //     .expect('Content-Type', /json/)
+    //     .expect(500);
+
+    //   expect(data.body).toEqual(expected);
+
+    // });
   });
 });
