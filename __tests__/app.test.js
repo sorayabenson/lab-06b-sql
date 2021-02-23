@@ -265,7 +265,7 @@ describe('app routes', () => {
 
     });
 
-    test('returns an error when called with missing keys', async() => {
+    test('returns an error when .post called with missing keys', async() => {
       const newGhost = {
         name: 'test ghost',
         description: 'test',
@@ -274,7 +274,9 @@ describe('app routes', () => {
         price_currency: 'test',
       };
 
-      const expected = '"error": "null value in column "img" of relation "ghosts" violates not-null constraint'; 
+      const expected = {
+        error: 'null value in column "img" of relation "ghosts" violates not-null constraint',
+      }; 
 
       const data = await fakeRequest(app)
         .post('/ghosts')
@@ -284,5 +286,45 @@ describe('app routes', () => {
 
       expect(data.body).toEqual(expected);
     });
+
+    // both of the following tests pass when .expect is (200) which seems werid that they should fail since the id does not exist in the current database.
+
+    // test('returns `` when .put is called with invalid ghost id', async() => {
+
+    //   const expectedGhost = {
+    //     name: 'test updated ghost',
+    //     img: 'http://placekitten.com/600/600',
+    //     description: 'test',
+    //     category: 'test',
+    //     price: 8,
+    //     price_currency: 'test',
+    //     trustworthy: true,
+    //     id: 666,
+    //     owner_id: 1,
+    //   };
+
+    //   const expected = '';
+
+    //   const data = await fakeRequest(app)
+    //     .put('/ghosts/666')
+    //     .send(expectedGhost)
+    //     .expect('Content-Type', /json/)
+    //     .expect(500);
+
+    //   expect(data.body).toEqual(expected);
+    // });
+
+    // test('returns `` when .delete is called with invalid ghost id', async() => {
+
+    //   const expected = '';
+
+    //   const data = await fakeRequest(app)
+    //     .delete('/ghosts/666')
+    //     .expect('Content-Type', /json/)
+    //     .expect(500);
+
+    //   expect(data.body).toEqual(expected);
+
+    // });
   });
 });
