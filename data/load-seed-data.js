@@ -4,7 +4,6 @@ const ghosts = require('./ghosts.js');
 const categoriesData = require('./categories.js');
 const usersData = require('./users.js');
 const { getEmoji } = require('../lib/emoji.js');
-const categories = require('./categories.js');
 
 run();
 
